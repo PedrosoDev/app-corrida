@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model answers {
+  id         String  @id
+  name       String
+  is_correct Boolean
+}
+
+model checkpoints {
+  id                     String                   @id
+  name                   String
+  slug                   String                   @unique
+  challenge_type         ChallengeType
+  race_id                String
+  races                  races                    @relation(fields: [race_id], references: [id])
+  runner_check_checkpoit runner_check_checkpoit[]
+}
+
+model questions {
+  id             String        @id
+  title          String
+  challenge_type ChallengeType @default(Question)
+}
+
+model races {
+  id          String        @id
+  name        String
+  host_id     String
+  code        String        @unique
+  checkpoints checkpoints[]
+  users       users         @relation(fields: [host_id], references: [id])
+  runners     runners[]
+}
+
+model runner_check_checkpoit {
+  id            String      @id
+  runner_id     String
+  checkpoint_id String
+  is_checked    Boolean
+  checkpoints   checkpoints @relation(fields: [checkpoint_id], references: [id])
+  runners       runners     @relation(fields: [runner_id], references: [id])
+}
+
+model runners {
+  id                     String                   @id
+  name                   String
+  started_time           DateTime?
+  finished_time          DateTime?
+  race_id                String
+  runner_check_checkpoit runner_check_checkpoit[]
+  races                  races                    @relation(fields: [race_id], references: [id])
+}
+
+model users {
+  id       String  @id
+  name     String
+  email    String  @unique
+  password String
+  races    races[]
+}
+
+enum ChallengeType {
+  Question
+}
